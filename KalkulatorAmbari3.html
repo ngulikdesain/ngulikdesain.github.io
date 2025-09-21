@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator DAYA RIMPANG - AMBARI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .cloud-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .cloud-status.connected {
+            background: rgba(40, 167, 69, 0.3);
+        }
+        
+        .cloud-status.disconnected {
+            background: rgba(220, 53, 69, 0.3);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .personil-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .personil-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+        
+        .btn-essay {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .btn-essay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+        
+        .score-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .badge-category {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .badge-kebun { background: #ff6b6b; color: white; }
+        .badge-sarang { background: #4ecdc4; color: white; }
+        .badge-lab { background: #45b7d1; color: white; }
+        .badge-pohon { background: #f7b731; color: white; }
+        .badge-dampak { background: #5f27cd; color: white; }
+        
+        .total-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        
+        .personil-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 30px;
+        }
+        
+        .personil-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .personil-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .personil-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .category-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .custom-toast {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #667eea;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+            padding: 20px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stats-label {
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .legend-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .legend-item.hidden {
+            opacity: 0.5;
+        }
+        
+        .habitat-description {
+            background: #e9f7fe;
+            border-left: 4px solid #667eea;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+            color: #495057;
+        }
+        
+        .future-analysis {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+        }
+        
+        .future-analysis h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .future-analysis h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .future-analysis p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .future-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .future-highlight h4 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .future-highlight ul {
+            padding-left: 20px;
+        }
+        
+        .future-highlight li {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .future-chart-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        .btn-future {
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .btn-future:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+            color: #764ba2;
+        }
+        
+        .member-impact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .member-impact-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
+            color: #495057;
+        }
+        
+        .member-impact-card h5 {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .art-impact {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .art-impact h4 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .art-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .art-impact-item {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .art-impact-item h5 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        /* Essay Modal Styles */
+        .essay-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .essay-content {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .essay-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .essay-header h2 {
+            color: #667eea;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .essay-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+        
+        .essay-body {
+            color: #495057;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        
+        .essay-body p {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        
+        .essay-body p:first-letter {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #667eea;
+            float: left;
+            line-height: 1;
+            margin-right: 8px;
+            margin-top: 5px;
+        }
+        
+        .essay-quote {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+        
+        .essay-highlight {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+        }
+        
+        .close-essay {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-essay:hover {
+            color: #dc3545;
+            transform: rotate(90deg);
+        }
+        
+        .essay-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .essay-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-share {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+        
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .sync-indicator.syncing {
+            color: #667eea;
+        }
+        
+        .sync-indicator i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-bolt"></i> DAYA RIMPANG</h1>
+                <p>Seambari Apa Kamu? - Kalkulator Kekuatan Kolektif AMBARI</p>
+                <div class="cloud-status" id="cloudStatus">
+                    <i class="fas fa-cloud"></i>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <h3 class="mb-4"><i class="fas fa-user-plus"></i> Tambah Personil</h3>
+                        
+                        <div class="data-actions">
+                            <button class="btn btn-secondary" id="exportDataBtn">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button class="btn btn-secondary" id="importDataBtn">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                            <input type="file" id="fileInput" accept=".json" style="display: none;">
+                        </div>
+                        
+                        <form id="personilForm">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Personil</label>
+                                <input type="text" class="form-control" id="namaPersonil" placeholder="Masukkan nama personil" required>
+                            </div>
+                            
+                            <div class="habitat-description">
+                                <i class="fas fa-info-circle"></i> Variabel habitat AMBARI mengukur kontribusi personil dalam ekosistem kolektif kita!
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Kebun Ide <span class="category-icon">🌿</span></label>
+                                <input type="range" class="form-range" id="kebun" min="0" max="100" value="50">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="kebunValue">50</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Sarang Kolaborasi <span class="category-icon">🪺</span></label>
+                                <input type="range" class="form-range" id="sarang" min="0" max="100" value="50">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="sarangValue">50</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Lab Inovasi <span class="category-icon">🔬</span></label>
+                                <input type="range" class="form-range" id="lab" min="0" max="100" value="50">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="labValue">50</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Pohon Konsistensi <span class="category-icon">🌳</span></label>
+                                <input type="range" class="form-range" id="pohon" min="0" max="100" value="50">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="pohonValue">50</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Dampak Ekosistem <span class="category-icon">🌍</span></label>
+                                <input type="range" class="form-range" id="dampak" min="0" max="100" value="50">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="dampakValue">50</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-calculator"></i> Hitung DAYA RIMPANG
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-lg-8">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="mb-0"><i class="fas fa-chart-line"></i> Hasil & Visualisasi</h3>
+                            <div class="sync-indicator" id="syncIndicator">
+                                <i class="fas fa-sync"></i>
+                                <span>Synced</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Stats Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number" id="totalPersonil">0</div>
+                                    <div class="stats-label">Total Personil</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number" id="avgScore">0</div>
+                                    <div class="stats-label">Rata-rata Score</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number" id="topScore">0</div>
+                                    <div class="stats-label">Score Tertinggi</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number" id="superStarCount">0</div>
+                                    <div class="stats-label">Super Star</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabs for Charts -->
+                        <ul class="nav nav-tabs" id="chartTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="radar-tab" data-bs-toggle="tab" data-bs-target="#radar" type="button">
+                                    <i class="fas fa-spider"></i> Habitat AMBARI
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bar-tab" data-bs-toggle="tab" data-bs-target="#bar" type="button">
+                                    <i class="fas fa-chart-bar"></i> Peringkat
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pie-tab" data-bs-toggle="tab" data-bs-target="#pie" type="button">
+                                    <i class="fas fa-chart-pie"></i> Distribusi
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="chartTabContent">
+                            <div class="tab-pane fade show active" id="radar" role="tabpanel">
+                                <div class="chart-container">
+                                    <canvas id="radarChart"></canvas>
+                                </div>
+                                <div class="legend-container" id="radarLegend">
+                                    <!-- Legend items will be generated dynamically -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="bar" role="tabpanel">
+                                <div class="chart-container">
+                                    <canvas id="barChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pie" role="tabpanel">
+                                <div class="chart-container">
+                                    <canvas id="pieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="hasilPerhitungan" class="personil-card" style="display: none;">
+                            <h4 id="hasilNama" class="text-center mb-3"></h4>
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="badge-category badge-kebun">
+                                        <i class="fas fa-seedling"></i> Kebun Ide
+                                    </div>
+                                    <div id="hasilKebun" class="mt-2"></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="badge-category badge-sarang">
+                                        <i class="fas fa-dove"></i> Sarang Kolaborasi
+                                    </div>
+                                    <div id="hasilSarang" class="mt-2"></div>
+                                </div>
+                            </div>
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="badge-category badge-lab">
+                                        <i class="fas fa-flask"></i> Lab Inovasi
+                                    </div>
+                                    <div id="hasilLab" class="mt-2"></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="badge-category badge-pohon">
+                                        <i class="fas fa-tree"></i> Pohon Konsistensi
+                                    </div>
+                                    <div id="hasilPohon" class="mt-2"></div>
+                                </div>
+                            </div>
+                            <div class="row text-center mb-3">
+                                <div class="col-12">
+                                    <div class="badge-category badge-dampak">
+                                        <i class="fas fa-globe-asia"></i> Dampak Ekosistem
+                                    </div>
+                                    <div id="hasilDampak" class="mt-2"></div>
+                                </div>
+                            </div>
+                            <div class="score-display">
+                                <div>TOTAL DAYA RIMPANG</div>
+                                <div class="total-score" id="totalScore">0</div>
+                                <div id="kategoriPersonil"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h4><i class="fas fa-users"></i> Daftar Personil AMBARI</h4>
+                            <div id="personilList" class="personil-list">
+                                <div class="text-center p-4">
+                                    <div class="loading-spinner"></div>
+                                    <p class="text-muted mt-2">Memuat data dari cloud...</p>
+                                </div>
+                            </div>
+                            
+                            <button id="analyzeFutureBtn" class="btn btn-primary w-100" style="display: none;">
+                                <i class="fas fa-crystal-ball"></i> Analisis Masa Depan Kolektif AMBARI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Future Analysis Section -->
+                <div id="futureAnalysis" class="future-analysis">
+                    <h2><i class="fas fa-crystal-ball"></i> Analisis Masa Depan Kolektif AMBARI</h2>
+                    
+                    <div class="future-highlight">
+                        <h4>Profil Kolektif AMBARI</h4>
+                        <p id="collectiveProfile">Berdasarkan analisis DAYA RIMPANG dari seluruh anggota, kolektif AMBARI memiliki potensi yang luar biasa untuk berkembang dalam ekosistem seni rupa kontemporer.</p>
+                    </div>
+                    
+                    <h3>Masa Depan Kolektif AMBARI</h3>
+                    <div id="futurePrediction">
+                        <p>Berdasarkan data DAYA RIMPANG yang telah terkumpul, masa depan kolektif AMBARI diprediksi akan...</p>
+                    </div>
+                    
+                    <div class="future-chart-container">
+                        <canvas id="futureChart"></canvas>
+                    </div>
+                    
+                    <h3>Dampak pada Masing-masing Anggota</h3>
+                    <div class="member-impact" id="memberImpact">
+                        <!-- Member impact cards will be generated dynamically -->
+                    </div>
+                    
+                    <h3>Dampak pada Masa Depan Seni Rupa</h3>
+                    <div class="art-impact">
+                        <h4>Kontribusi AMBARI terhadap Ekosistem Seni Rupa</h4>
+                        <div class="art-impact-grid" id="artImpactGrid">
+                            <!-- Art impact items will be generated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <button class="btn-essay w-100" id="generateEssayBtn">
+                        <i class="fas fa-feather-alt"></i> Hasil Essay tentang Kolektif AMBARI
+                    </button>
+                    
+                    <button class="btn-future" id="closeAnalysisBtn">
+                        <i class="fas fa-times-circle"></i> Tutup Analisis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Essay Modal -->
+    <div id="essayModal" class="essay-modal">
+        <div class="essay-content">
+            <span class="close-essay" id="closeEssay">&times;</span>
+            <div class="essay-header">
+                <h2><i class="fas fa-feather-alt"></i> Essay: Kolektif Seni Rupa AMBARI</h2>
+                <p>Catatan Kuratorial - Berdasarkan Analisis DAYA RIMPANG</p>
+            </div>
+            <div class="essay-body" id="essayContent">
+                <!-- Essay content will be generated dynamically -->
+            </div>
+            <div class="essay-footer">
+                <div class="essay-actions">
+                    <button class="btn-download" id="downloadEssay">
+                        <i class="fas fa-download"></i> Download Essay
+                    </button>
+                    <button class="btn-share" id="shareEssay">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        
+        let personils = [];
+        let radarChart, barChart, pieChart, futureChart;
+        let isOnline = false;
+        const colors = [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(199, 199, 199, 0.7)',
+            'rgba(83, 102, 255, 0.7)',
+            'rgba(40, 159, 64, 0.7)',
+            'rgba(210, 99, 132, 0.7)'
+        ];
+        
+        // Check connection status
+        function updateConnectionStatus(connected) {
+            isOnline = connected;
+            const cloudStatus = document.getElementById('cloudStatus');
+            const syncIndicator = document.getElementById('syncIndicator');
+            
+            if (connected) {
+                cloudStatus.className = 'cloud-status connected';
+                cloudStatus.innerHTML = '<i class="fas fa-cloud"></i><span>Connected</span>';
+                syncIndicator.className = 'sync-indicator';
+                syncIndicator.innerHTML = '<i class="fas fa-check"></i><span>Synced</span>';
+            } else {
+                cloudStatus.className = 'cloud-status disconnected';
+                cloudStatus.innerHTML = '<i class="fas fa-cloud"></i><span>Offline</span>';
+                syncIndicator.className = 'sync-indicator';
+                syncIndicator.innerHTML = '<i class="fas fa-times"></i><span>Offline</span>';
+            }
+        }
+        
+        // Listen for connection status
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+                updateConnectionStatus(true);
+                loadDataFromFirebase();
+            } else {
+                updateConnectionStatus(false);
+            }
+        });
+        
+        // Initialize charts
+        function initCharts() {
+            // Radar Chart
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kebun Ide', 'Sarang Kolaborasi', 'Lab Inovasi', 'Pohon Konsistensi', 'Dampak Ekosistem'],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'DAYA RIMPANG',
+                        data: [],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['SUPER STAR', 'BINTANG', 'BERKILAU', 'SOLID', 'POTENSIAL'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#FFD700',
+                            '#FFA500',
+                            '#FF6347',
+                            '#4169E1',
+                            '#32CD32'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Future Chart
+            const futureCtx = document.getElementById('futureChart').getContext('2d');
+            futureChart = new Chart(futureCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Sekarang', '1 Tahun', '2 Tahun', '3 Tahun', '5 Tahun'],
+                    datasets: [{
+                        label: 'Pertumbuhan Kolektif',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load data from Firebase
+        function loadDataFromFirebase() {
+            const personilsRef = database.ref('personils');
+            personilsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    personils = Object.values(data);
+                    updatePersonilList();
+                    updateCharts();
+                    updateStats();
+                    checkAnalyzeButton();
+                } else {
+                    personils = [];
+                    updatePersonilList();
+                    updateCharts();
+                    updateStats();
+                    checkAnalyzeButton();
+                }
+            });
+        }
+        
+        // Save data to Firebase
+        function saveDataToFirebase() {
+            if (!isOnline) {
+                showToast('Tidak dapat menyimpan data. Periksa koneksi internet.', 'warning');
+                return;
+            }
+            
+            showSyncIndicator();
+            
+            const personilsRef = database.ref('personils');
+            personils.set(personils)
+                .then(() => {
+                    hideSyncIndicator();
+                    showToast('Data berhasil disimpan ke cloud!', 'success');
+                })
+                .catch((error) => {
+                    hideSyncIndicator();
+                    showToast('Gagal menyimpan data: ' + error.message, 'error');
+                });
+        }
+        
+        function showSyncIndicator() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            syncIndicator.className = 'sync-indicator syncing';
+            syncIndicator.innerHTML = '<i class="fas fa-sync"></i><span>Syncing...</span>';
+        }
+        
+        function hideSyncIndicator() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            syncIndicator.className = 'sync-indicator';
+            syncIndicator.innerHTML = '<i class="fas fa-check"></i><span>Synced</span>';
+        }
+        
+        // Update nilai slider
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', function() {
+                document.getElementById(this.id + 'Value').textContent = this.value;
+            });
+        });
+        
+        // Form submit
+        document.getElementById('personilForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nama = document.getElementById('namaPersonil').value;
+            const kebun = parseInt(document.getElementById('kebun').value);
+            const sarang = parseInt(document.getElementById('sarang').value);
+            const lab = parseInt(document.getElementById('lab').value);
+            const pohon = parseInt(document.getElementById('pohon').value);
+            const dampak = parseInt(document.getElementById('dampak').value);
+            
+            // Hitung total score
+            const totalScore = Math.round((kebun + sarang + lab + pohon + dampak) / 5);
+            
+            // Tentukan kategori
+            let kategori = '';
+            if (totalScore >= 90) kategori = '🌟 SUPER STAR';
+            else if (totalScore >= 80) kategori = '⭐ BINTANG';
+            else if (totalScore >= 70) kategori = '🔥 BERKILAU';
+            else if (totalScore >= 60) kategori = '💪 SOLID';
+            else kategori = '🌱 POTENSIAL';
+            
+            // Tampilkan hasil
+            document.getElementById('hasilNama').textContent = nama;
+            document.getElementById('hasilKebun').textContent = kebun + '%';
+            document.getElementById('hasilSarang').textContent = sarang + '%';
+            document.getElementById('hasilLab').textContent = lab + '%';
+            document.getElementById('hasilPohon').textContent = pohon + '%';
+            document.getElementById('hasilDampak').textContent = dampak + '%';
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('kategoriPersonil').textContent = kategori;
+            document.getElementById('hasilPerhitungan').style.display = 'block';
+            
+            // Simpan ke array
+            const personil = {
+                id: Date.now(),
+                nama: nama,
+                kebun: kebun,
+                sarang: sarang,
+                lab: lab,
+                pohon: pohon,
+                dampak: dampak,
+                totalScore: totalScore,
+                kategori: kategori,
+                createdAt: new Date().toISOString()
+            };
+            
+            personils.push(personil);
+            saveDataToFirebase();
+            
+            // Reset form
+            this.reset();
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                slider.value = 50;
+                document.getElementById(slider.id + 'Value').textContent = '50';
+            });
+        });
+        
+        function checkAnalyzeButton() {
+            const analyzeBtn = document.getElementById('analyzeFutureBtn');
+            if (personils.length >= 3) {
+                analyzeBtn.style.display = 'block';
+            } else {
+                analyzeBtn.style.display = 'none';
+            }
+        }
+        
+        function updateCharts() {
+            // Update Radar Chart with all personils
+            const datasets = personils.map((personil, index) => {
+                const colorIndex = index % colors.length;
+                return {
+                    label: personil.nama,
+                    data: [
+                        personil.kebun,
+                        personil.sarang,
+                        personil.lab,
+                        personil.pohon,
+                        personil.dampak
+                    ],
+                    backgroundColor: colors[colorIndex].replace('0.7', '0.2'),
+                    borderColor: colors[colorIndex].replace('0.7', '1'),
+                    pointBackgroundColor: colors[colorIndex].replace('0.7', '1'),
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[colorIndex].replace('0.7', '1')
+                };
+            });
+            
+            radarChart.data.datasets = datasets;
+            radarChart.update();
+            
+            // Update Radar Legend
+            updateRadarLegend();
+            
+            // Update Bar Chart
+            const sortedPersonils = [...personils].sort((a, b) => b.totalScore - a.totalScore);
+            barChart.data.labels = sortedPersonils.map(p => p.nama);
+            barChart.data.datasets[0].data = sortedPersonils.map(p => p.totalScore);
+            barChart.update();
+            
+            // Update Pie Chart
+            const categoryCount = {
+                '🌟 SUPER STAR': 0,
+                '⭐ BINTANG': 0,
+                '🔥 BERKILAU': 0,
+                '💪 SOLID': 0,
+                '🌱 POTENSIAL': 0
+            };
+            
+            personils.forEach(p => {
+                categoryCount[p.kategori]++;
+            });
+            
+            pieChart.data.datasets[0].data = Object.values(categoryCount);
+            pieChart.update();
+        }
+        
+        function updateRadarLegend() {
+            const legendContainer = document.getElementById('radarLegend');
+            legendContainer.innerHTML = '';
+            
+            personils.forEach((personil, index) => {
+                const colorIndex = index % colors.length;
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.dataset.index = index;
+                
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background-color: ${colors[colorIndex].replace('0.7', '1')}"></div>
+                    <span>${personil.nama}</span>
+                `;
+                
+                legendItem.addEventListener('click', function() {
+                    const datasetIndex = parseInt(this.dataset.index);
+                    const meta = radarChart.getDatasetMeta(datasetIndex);
+                    
+                    meta.hidden = !meta.hidden;
+                    this.classList.toggle('hidden');
+                    
+                    radarChart.update();
+                });
+                
+                legendContainer.appendChild(legendItem);
+            });
+        }
+        
+        function updateStats() {
+            document.getElementById('totalPersonil').textContent = personils.length;
+            
+            if (personils.length > 0) {
+                const avgScore = Math.round(personils.reduce((sum, p) => sum + p.totalScore, 0) / personils.length);
+                const topScore = Math.max(...personils.map(p => p.totalScore));
+                const superStarCount = personils.filter(p => p.totalScore >= 90).length;
+                
+                document.getElementById('avgScore').textContent = avgScore;
+                document.getElementById('topScore').textContent = topScore;
+                document.getElementById('superStarCount').textContent = superStarCount;
+            } else {
+                document.getElementById('avgScore').textContent = '0';
+                document.getElementById('topScore').textContent = '0';
+                document.getElementById('superStarCount').textContent = '0';
+            }
+        }
+        
+        function updatePersonilList() {
+            const listContainer = document.getElementById('personilList');
+            
+            if (personils.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted text-center">Belum ada personil yang ditambahkan</p>';
+                return;
+            }
+            
+            // Urutkan berdasarkan score tertinggi
+            const sortedPersonils = [...personils].sort((a, b) => b.totalScore - a.totalScore);
+            
+            listContainer.innerHTML = sortedPersonils.map((personil, index) => `
+                <div class="personil-item">
+                    <div>
+                        <strong>${index + 1}. ${personil.nama}</strong>
+                        <div class="text-muted small">${personil.kategori}</div>
+                        <div class="progress" style="width: 200px;">
+                            <div class="progress-bar" role="progressbar" style="width: ${personil.totalScore}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="personil-score">${personil.totalScore}</div>
+                        <button class="remove-btn ms-3" onclick="removePersonil(${personil.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function removePersonil(id) {
+            const personil = personils.find(p => p.id === id);
+            personils = personils.filter(p => p.id !== id);
+            saveDataToFirebase();
+            showToast(`${personil.nama} telah dihapus dari daftar`, 'warning');
+        }
+        
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+            const color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#ffc107';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon}" style="color: ${color}; font-size: 1.5rem; margin-right: 15px;"></i>
+                <span>${message}</span>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Export Data
+        document.getElementById('exportDataBtn').addEventListener('click', function() {
+            const dataStr = JSON.stringify(personils, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `daya_rimpang_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast('Data berhasil diekspor!', 'success');
+        });
+        
+        // Import Data
+        document.getElementById('importDataBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData)) {
+                            personils = importedData;
+                            saveDataToFirebase();
+                            showToast('Data berhasil diimpor!', 'success');
+                        } else {
+                            showToast('Format data tidak valid!', 'error');
+                        }
+                    } catch (error) {
+                        showToast('Gagal membaca file: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // Future Analysis
+        document.getElementById('analyzeFutureBtn').addEventListener('click', function() {
+            generateFutureAnalysis();
+            document.getElementById('futureAnalysis').style.display = 'block';
+            document.getElementById('futureAnalysis').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        document.getElementById('closeAnalysisBtn').addEventListener('click', function() {
+            document.getElementById('futureAnalysis').style.display = 'none';
+        });
+        
+        // Essay Modal
+        document.getElementById('generateEssayBtn').addEventListener('click', function() {
+            generateEssay();
+            document.getElementById('essayModal').style.display = 'block';
+        });
+        
+        document.getElementById('closeEssay').addEventListener('click', function() {
+            document.getElementById('essayModal').style.display = 'none';
+        });
+        
+        document.getElementById('downloadEssay').addEventListener('click', function() {
+            downloadEssay();
+        });
+        
+        document.getElementById('shareEssay').addEventListener('click', function() {
+            shareEssay();
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('essayModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        function generateFutureAnalysis() {
+            // Calculate collective scores
+            const avgKebun = Math.round(personils.reduce((sum, p) => sum + p.kebun, 0) / personils.length);
+            const avgSarang = Math.round(personils.reduce((sum, p) => sum + p.sarang, 0) / personils.length);
+            const avgLab = Math.round(personils.reduce((sum, p) => sum + p.lab, 0) / personils.length);
+            const avgPohon = Math.round(personils.reduce((sum, p) => sum + p.pohon, 0) / personils.length);
+            const avgDampak = Math.round(personils.reduce((sum, p) => sum + p.dampak, 0) / personils.length);
+            const avgTotal = Math.round((avgKebun + avgSarang + avgLab + avgPohon + avgDampak) / 5);
+            
+            // Generate collective profile
+            let profileText = `Kolektif AMBARI memiliki kekuatan terbesar di bidang `;
+            const topAspects = [
+                { name: 'Kebun Ide', value: avgKebun },
+                { name: 'Sarang Kolaborasi', value: avgSarang },
+                { name: 'Lab Inovasi', value: avgLab },
+                { name: 'Pohon Konsistensi', value: avgPohon },
+                { name: 'Dampak Ekosistem', value: avgDampak }
+            ].sort((a, b) => b.value - a.value);
+            
+            profileText += topAspects[0].name.toLowerCase() + ` (${topAspects[0].value}%), `;
+            profileText += `diikuti oleh ${topAspects[1].name.toLowerCase()} (${topAspects[1].value}%). `;
+            profileText += `Dengan rata-rata DAYA RIMPANG ${avgTotal}%, kolektif ini menunjukkan potensi yang `;
+            
+            if (avgTotal >= 80) {
+                profileText += `sangat tinggi untuk menjadi pemimpin inovasi dalam ekosistem seni rupa kontemporer.`;
+            } else if (avgTotal >= 70) {
+                profileText += `kuat untuk memberikan kontribusi signifikan dalam perkembangan seni rupa.`;
+            } else if (avgTotal >= 60) {
+                profileText += `cukup baik untuk berkembang menjadi kekuatan kreatif yang diperhitungkan.`;
+            } else {
+                profileText += `perlu pengembangan lebih lanjut untuk mencapai dampak yang lebih besar.`;
+            }
+            
+            document.getElementById('collectiveProfile').textContent = profileText;
+            
+            // Generate future prediction
+            let futureText = '';
+            if (avgTotal >= 80) {
+                futureText = `menjadi salah satu kolektif seni paling berpengaruh di Indonesia dalam 3-5 tahun ke depan. Dengan kombinasi kreativitas yang tinggi dan kolaborasi yang solid, AMBARI akan mampu menciptakan karya-karya yang memecahkan norma dan menginspirasi generasi seniman muda. Kolektif ini berpotensi untuk menjadi ruang inkubasi bagi seniman-seniman baru yang akan membentuk wajah seni rupa Indonesia masa depan.`;
+            } else if (avgTotal >= 70) {
+                futureText = `berkembang menjadi kekuatan kreatif yang diperhitungkan dalam kancah seni rupa nasional. Dengan fokus pada pengembangan inovasi dan konsistensi berkarya, AMBARI akan mampu menghasilkan karya-karya yang konsisten dan bermakna. Kolektif ini berpotensi untuk berkolaborasi dengan institusi seni besar dan mengadakan pameran-pameran yang memperluas jangkauan audiens.`;
+            } else if (avgTotal >= 60) {
+                futureText = `terus tumbuh dan memperkuat fondasinya sebagai kolektif seni yang solid. Dengan pengembangan lebih lanjut pada aspek kolaborasi dan dampak ekosistem, AMBARI akan mampu meningkatkan visibilitas dan pengaruhnya dalam komunitas seni. Kolektif ini memiliki potensi untuk menjadi wadah penting bagi perkembangan seniman lokal dan dialog seni yang relevan dengan masyarakat.`;
+            } else {
+                futureText = `membutuhkan periode pengembangan untuk mencapai potensi penuhnya. Dengan fokus pada penguatan konsistensi dan pengembangan jaringan kolaborasi, AMBARI dapat secara bertahap membangun reputasi dan meningkatkan kualitas karya. Kolektif ini memiliki potensi untuk menjadi ruang eksplorasi yang penting bagi seniman muda yang sedang mencari identitas artistiknya.`;
+            }
+            
+            document.getElementById('futurePrediction').innerHTML = `<p>${futureText}</p>`;
+            
+            // Update future chart
+            const growthData = [avgTotal];
+            if (avgTotal >= 80) {
+                growthData.push(avgTotal + 5, avgTotal + 10, avgTotal + 15, avgTotal + 20);
+            } else if (avgTotal >= 70) {
+                growthData.push(avgTotal + 7, avgTotal + 12, avgTotal + 15, avgTotal + 18);
+            } else if (avgTotal >= 60) {
+                growthData.push(avgTotal + 10, avgTotal + 15, avgTotal + 18, avgTotal + 20);
+            } else {
+                growthData.push(avgTotal + 15, avgTotal + 20, avgTotal + 22, avgTotal + 25);
+            }
+            
+            futureChart.data.datasets[0].data = growthData;
+            futureChart.update();
+            
+            // Generate member impact
+            const memberImpactContainer = document.getElementById('memberImpact');
+            memberImpactContainer.innerHTML = '';
+            
+            personils.forEach(personil => {
+                const impactCard = document.createElement('div');
+                impactCard.className = 'member-impact-card';
+                
+                let impactText = '';
+                if (personil.totalScore >= 90) {
+                    impactText = `Sebagai SUPER STAR, ${personil.nama} akan menjadi pemimpin kreatif yang menginspirasi seluruh kolektif. Pengaruhnya akan membuka pintu bagi kolaborasi dengan seniman dan institusi ternama, serta meningkatkan visibilitas AMBARI di kancah nasional.`;
+                } else if (personil.totalScore >= 80) {
+                    impactText = `Sebagai BINTANG, ${personil.nama} akan menjadi tulang punggung kolektif dengan kontribusi yang konsisten dan bermutu. Karyanya akan menjadi acuan bagi anggota lainnya dan membantu menstabilkan identitas artistik AMBARI.`;
+                } else if (personil.totalScore >= 70) {
+                    impactText = `Dengan kategori BERKILAU, ${personil.nama} memiliki potensi besar untuk berkembang menjadi kekuatan kreatif utama. Dengan bimbingan dan kesempatan yang tepat, kontribusinya akan semakin signifikan bagi kolektif.`;
+                } else if (personil.totalScore >= 60) {
+                    impactText = `Sebagai anggota SOLID, ${personil.nama} akan memberikan fondasi yang kokoh bagi kolektif. Konsistensinya akan membantu menjaga stabilitas AMBARI sambil terus mengembangkan kemampuan artistiknya.`;
+                } else {
+                    impactText = `Dengan kategori POTENSIAL, ${personil.nama} memiliki ruang pertumbuhan yang besar. Dengan dukungan kolektif, pengalaman, dan eksplorasi lebih lanjut, kontribusinya akan semakin vital bagi AMBARI.`;
+                }
+                
+                impactCard.innerHTML = `
+                    <h5>${personil.nama} (${personil.kategori})</h5>
+                    <p>${impactText}</p>
+                `;
+                
+                memberImpactContainer.appendChild(impactCard);
+            });
+            
+            // Generate art impact
+            const artImpactGrid = document.getElementById('artImpactGrid');
+            artImpactGrid.innerHTML = '';
+            
+            const artImpacts = [];
+            
+            if (avgKebun >= 70) {
+                artImpacts.push({
+                    title: 'Inovasi Bentuk dan Medium',
+                    description: 'AMBARI akan menjadi pelopor dalam eksplorasi bentuk dan medium baru, mendorong batas-batas konvensional seni rupa.'
+                });
+            }
+            
+            if (avgSarang >= 70) {
+                artImpacts.push({
+                    title: 'Model Kolaborasi Seni',
+                    description: 'Kolektif ini akan menciptakan model kolaborasi yang inspiratif bagi komunitas seni lainnya, menunjukkan kekuatan kerja sama dalam menciptakan karya bermakna.'
+                });
+            }
+            
+            if (avgLab >= 70) {
+                artImpacts.push({
+                    title: 'Integrasi Teknologi dan Seni',
+                    description: 'AMBARI akan menjadi garda depan dalam integrasi teknologi dengan seni rupa, menciptakan karya yang relevan dengan zaman digital.'
+                });
+            }
+            
+            if (avgPohon >= 70) {
+                artImpacts.push({
+                    title: 'Pengembangan Karir Seniman',
+                    description: 'Kolektif ini akan menjadi inkubator penting bagi pengembangan karir seniman, memberikan dukungan dan stabilitas bagi anggotanya.'
+                });
+            }
+            
+            if (avgDampak >= 70) {
+                artImpacts.push({
+                    title: 'Seni untuk Perubahan Sosial',
+                    description: 'AMBARI akan menggunakan seni sebagai alat untuk perubahan sosial, menciptakan karya yang tidak hanya estetis tetapi juga memberikan dampak bagi masyarakat.'
+                });
+            }
+            
+            // Add default impacts if none of the above
+            if (artImpacts.length === 0) {
+                artImpacts.push(
+                    {
+                        title: 'Kontribusi pada Ekosistem Seni Lokal',
+                        description: 'Meskipun masih dalam tahap pengembangan, AMBARI akan memberikan kontribusi berharga pada ekosistem seni lokal melalui keberagaman perspektif dan semangat kolaboratif.'
+                    },
+                    {
+                        title: 'Pembelajaran dan Pertumbuhan Bersama',
+                        description: 'Kolektif ini akan menjadi ruang penting untuk pembelajaran dan pertumbuhan bersama, di mana setiap anggota dapat mengembangkan potensinya dalam lingkungan yang mendukung.'
+                    }
+                );
+            }
+            
+            artImpacts.forEach(impact => {
+                const impactItem = document.createElement('div');
+                impactItem.className = 'art-impact-item';
+                impactItem.innerHTML = `
+                    <h5>${impact.title}</h5>
+                    <p>${impact.description}</p>
+                `;
+                artImpactGrid.appendChild(impactItem);
+            });
+        }
+        
+        function generateEssay() {
+            // Calculate collective scores
+            const avgKebun = Math.round(personils.reduce((sum, p) => sum + p.kebun, 0) / personils.length);
+            const avgSarang = Math.round(personils.reduce((sum, p) => sum + p.sarang, 0) / personils.length);
+            const avgLab = Math.round(personils.reduce((sum, p) => sum + p.lab, 0) / personils.length);
+            const avgPohon = Math.round(personils.reduce((sum, p) => sum + p.pohon, 0) / personils.length);
+            const avgDampak = Math.round(personils.reduce((sum, p) => sum + p.dampak, 0) / personils.length);
+            const avgTotal = Math.round((avgKebun + avgSarang + avgLab + avgPohon + avgDampak) / 5);
+            
+            // Get top aspects
+            const topAspects = [
+                { name: 'Kebun Ide', value: avgKebun },
+                { name: 'Sarang Kolaborasi', value: avgSarang },
+                { name: 'Lab Inovasi', value: avgLab },
+                { name: 'Pohon Konsistensi', value: avgPohon },
+                { name: 'Dampak Ekosistem', value: avgDampak }
+            ].sort((a, b) => b.value - a.value);
+            
+            // Generate essay content with curatorial style
+            let essayContent = `
+                <p>A rhizome has no beginning or end; it is always in the middle, between things, interbeing, intermezzo. Dalam kerapangan DAYA RIMPANG yang terukur dari kolektif AMBARI, saya menemukan kegamangan yang membuahkan energi—energi untuk menulis bukan sebagai kurator yang memetakan jalan, melainkan sebagai peziarah yang menelusuri jejak.</p>
+                
+                <div class="essay-quote">
+                    "A rhizome has no beginning or end; it is always in the middle, between things, interbeing, intermezzo."<br>
+                    — Gilles Deleuze & Félix Guattari
+                </div>
+                
+                <p>AMBARI, bagi saya, persis seperti rimpang yang menolak pusat. Mereka bukan pohon berdiri megah dengan hierarki jelas, melainkan kebun yang terus menjalar—kadang terlihat sederhana dari permukaan, tetapi di dalam tanah membangun jaringan yang rumit dan tak terduga. Analisis DAYA RIMPANG menunjukkan bagaimana kolektif ini menemukan kekuatan terbesarnya di ${topAspects[0].name.toLowerCase()} (${topAspects[0].value}%) dan ${topAspects[1].name.toLowerCase()} (${topAspects[1].value}%). Sebuah bukti bahwa dalam seni, kekuatan sejati seringkali terletak pada keterhubungan, bukan pada dominasi.</p>
+                
+                <p>Dengan rata-rata DAYA RIMPANG ${avgTotal}%, AMBARI menunjukkan potensi yang ${avgTotal >= 80 ? 'sangat tinggi' : avgTotal >= 70 ? 'kuat' : avgTotal >= 60 ? 'cukup baik' : 'masih perlu digali'} untuk menancapkan akar dalam ekosistem seni rupa kontemporer. Namun pertanyaannya: apakah pertumbuhan tanpa pusat ini juga berarti tidak ada kendali atau arah reflektif? Apakah kebebasan struktur bisa berubah menjadi kebingungan bagi anggota baru atau penonton?</p>
+                
+                <div class="essay-highlight">
+                    Pertumbuhan liar memiliki risiko. Rimpang menolak pusat, tetapi bisa saling menjerat. Kolektif bisa terjebak dalam euforia kebersamaan, lupa menanyakan pertanyaan kritis. Cahaya yang menyilaukan bisa menjadi pedang bermata dua—nama besar bisa menutup kemungkinan baru.
+                </div>
+                
+                <p>Setiap anggota AMBARI membawa dunianya sendiri. Ada yang bergerak dengan bahasa visual kuat, ada yang menekuni kedalaman material, ada pula yang menjelajahi tubuh dan ruang. Saat bertemu, keragaman itulah yang menjadi daya. Dari cabang berbeda lahirlah jalinan tak terduga, seperti kebun liar penuh kejutan. Namun, apakah kompleksitas ini terlalu menuntut penonton? Apakah sebagian energi pameran tersedot hanya untuk estetika, bukan interaksi atau refleksi kritis?</p>
+                
+                <p>Sebagai seseorang yang berada di antara dua dunia—agronomi dan seni—saya melihat AMBARI menjembatani keduanya. Di agronomi, saya belajar kesuburan tanah, logika akar yang tak terlihat. Di seni, saya belajar tubuh hadir yang fana namun bermakna. Di AMBARI, keduanya bertemu. Seni bisa tumbuh seperti tanaman, gagasan berakar dan menjalar tanpa tunduk satu arah.</p>
+                
+                <p>Pada akhirnya, saya ingin menutup dengan satu keyakinan: seni, seperti rimpang, selalu menemukan jalannya sendiri. Ia mungkin tumbuh di tempat tak terduga, muncul di celah yang tak direncanakan. Tapi ia akan terus tumbuh, selama ada tanah, energi, dan pertemuan. AMBARI, lagi-lagi, adalah bukti nyata keyakinan itu.</p>
+            `;
+            
+            document.getElementById('essayContent').innerHTML = essayContent;
+        }
+        
+        function downloadEssay() {
+            const essayText = document.getElementById('essayContent').innerText;
+            const blob = new Blob([essayText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Essay_Kolektif_AMBARI.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showToast('Essay berhasil diunduh!', 'success');
+        }
+        
+        function shareEssay() {
+            const essayText = document.getElementById('essayContent').innerText;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Essay: Kolektif Seni Rupa AMBARI',
+                    text: essayText.substring(0, 200) + '...',
+                    url: window.location.href
+                }).then(() => {
+                    showToast('Essay berhasil dibagikan!', 'success');
+                }).catch(() => {
+                    showToast('Pembagian dibatalkan', 'warning');
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const textArea = document.createElement('textarea');
+                textArea.value = essayText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('Essay disalin ke clipboard!', 'success');
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', function() {
+            initCharts();
+            // Data will be loaded automatically when Firebase connects
+        });
+    </script>
+</body>
+</html>
